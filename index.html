@@ -61,6 +61,7 @@
         let constructorParams = "";
         let fromJsonAssignments = "";
         let toJsonAssignments = "";
+        let fakeDataAssignments = "";
         let nestedClasses = "";
 
         for (const [key, value] of Object.entries(jsonObject)) {
@@ -73,6 +74,7 @@
             key
           )},\n`;
           toJsonAssignments += `      '${key}': ${key},\n`;
+          fakeDataAssignments += `      ${key}: ${generateFakeData(type)},\n`;
 
           if (
             Array.isArray(value) &&
@@ -93,6 +95,11 @@ ${constructorParams}  });
   factory ${className}.fromJson(Map<String, dynamic> json) {
     return ${className}(
 ${fromJsonAssignments}    );
+  }
+
+  factory ${className}.fakeData() {
+    return ${className}(
+${fakeDataAssignments}    );
   }
 
   Map<String, dynamic> toJson() {
@@ -147,6 +154,23 @@ ${toJsonAssignments}    };
           return " as Map<String, dynamic>";
         }
         return "";
+      }
+
+      function generateFakeData(type) {
+        switch (type) {
+          case "String":
+            return `'fake_value'`;
+          case "int":
+            return `0`;
+          case "double":
+            return `0.0`;
+          case "bool":
+            return `false`;
+          case "List<dynamic>":
+            return `[]`;
+          default:
+            return `null`;
+        }
       }
 
       function convertJson() {
