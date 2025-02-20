@@ -28,6 +28,7 @@
         background-color: #fff;
         padding: 10px;
         border-radius: 5px;
+        user-select: none;
       }
     </style>
   </head>
@@ -40,6 +41,7 @@
     />
     <textarea id="jsonInput" placeholder="Enter JSON here..."></textarea>
     <button onclick="convertJson()">Convert</button>
+    <button onclick="copyToClipboard()">Copy Result</button>
     <pre id="dartOutput"></pre>
 
     <script>
@@ -74,7 +76,10 @@
             key
           )},\n`;
           toJsonAssignments += `      '${key}': ${key},\n`;
-          fakeDataAssignments += `      ${key}: ${generateFakeData(type)},\n`;
+          fakeDataAssignments += `      ${key}: ${generateFakeData(
+            type,
+            key
+          )},\n`;
 
           if (
             Array.isArray(value) &&
@@ -114,7 +119,7 @@ ${toJsonAssignments}    };
           if (value.length > 0 && typeof value[0] === "object") {
             return `List<${capitalizeFirstLetter(key)}>`;
           }
-          return "List<dynamic>";
+          return "List<dynamic>?";
         }
         if (typeof value === "string" && isValidDate(value)) {
           return "String";
@@ -156,20 +161,20 @@ ${toJsonAssignments}    };
         return "";
       }
 
-      function generateFakeData(type) {
+      function generateFakeData(type, key) {
         switch (type) {
           case "String":
-            return `'fake_value'`;
+            return `'fake_${key}'`;
           case "int":
-            return `0`;
+            return `1`;
           case "double":
-            return `0.0`;
+            return `1.0`;
           case "bool":
-            return `false`;
-          case "List<dynamic>":
+            return `true`;
+          case "List<dynamic>?":
             return `[]`;
           default:
-            return `null`;
+            return `${capitalizeFirstLetter(key)}.fakeData()`;
         }
       }
 
@@ -179,6 +184,18 @@ ${toJsonAssignments}    };
           document.getElementById("classNameInput").value || "GeneratedClass";
         const dartCode = jsonToDart(className, jsonInput);
         document.getElementById("dartOutput").innerText = dartCode;
+      }
+
+      function copyToClipboard() {
+        const dartOutput = document.getElementById("dartOutput").innerText;
+        navigator.clipboard
+          .writeText(dartOutput)
+          .then(() => {
+            alert("Dart code copied to clipboard!");
+          })
+          .catch((err) => {
+            console.error("Failed to copy: ", err);
+          });
       }
     </script>
   </body>
