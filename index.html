@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JSON to Dart Converter</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        padding: 20px;
+        background-color: #f4f4f4;
+      }
+      textarea {
+        width: 100%;
+        height: 200px;
+        margin-bottom: 10px;
+      }
+      button {
+        padding: 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+      }
+      pre {
+        background-color: #fff;
+        padding: 10px;
+        border-radius: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>JSON to Dart Converter</h1>
+    <textarea id="jsonInput" placeholder="Enter JSON here..."></textarea>
+    <button onclick="convertJson()">Convert</button>
+    <pre id="dartOutput"></pre>
+
+    <script>
+      function jsonToDart(className, jsonString) {
+        try {
+          const jsonObject = JSON.parse(jsonString);
+          return generateDartClass(className, jsonObject);
+        } catch (error) {
+          console.error("Invalid JSON:", error);
+          return "Error: Invalid JSON";
+        }
+      }
+
+      function generateDartClass(className, jsonObject) {
+        let fields = "";
+        let constructorParams = "";
+        let fromJsonAssignments = "";
+        let toJsonAssignments = "";
+
+        for (const [key, value] of Object.entries(jsonObject)) {
+          let type = inferDartType(value);
+          fields += `  final ${type} ${key};\n`;
+          constructorParams += `    required this.${key},\n`;
+          fromJsonAssignments += `      ${key}: json['${key}']${mapJsonType(
+            value
+          )},\n`;
+          toJsonAssignments += `      '${key}': ${key},\n`;
+        }
+
+        return `class ${className} {
+${fields}
+  ${className}({
+${constructorParams}  });
+
+  factory ${className}.fromJson(Map<String, dynamic> json) {
+    return ${className}(
+${fromJsonAssignments}    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+${toJsonAssignments}    };
+  }
+}`;
+      }
+
+      function inferDartType(value) {
+        if (Array.isArray(value)) {
+          if (value.length > 0) {
+            return `List<${inferDartType(value[0])}>`;
+          }
+          return "List<dynamic>";
+        }
+        switch (typeof value) {
+          case "string":
+            return "String";
+          case "number":
+            return value % 1 === 0 ? "int" : "double";
+          case "boolean":
+            return "bool";
+          case "object":
+            return value === null ? "dynamic" : "Map<String, dynamic>";
+          default:
+            return "dynamic";
+        }
+      }
+
+      function mapJsonType(value) {
+        if (Array.isArray(value)) {
+          if (value.length > 0) {
+            const type = inferDartType(value[0]);
+            return `.map((e) => e as ${type}).toList()`;
+          }
+          return "";
+        }
+        if (typeof value === "object" && value !== null) {
+          return " as Map<String, dynamic>";
+        }
+        return "";
+      }
+
+      function convertJson() {
+        const jsonInput = document.getElementById("jsonInput").value;
+        const dartCode = jsonToDart("GeneratedClass", jsonInput);
+        document.getElementById("dartOutput").innerText = dartCode;
+      }
+    </script>
+  </body>
+</html>
