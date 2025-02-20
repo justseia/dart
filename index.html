@@ -39,32 +39,46 @@
       type="text"
       placeholder="Enter main class name"
     />
-    <textarea id="jsonInput" placeholder="Enter JSON here..."></textarea>
+    <br />
+    <textarea
+      id="jsonInput"
+      rows="20"
+      placeholder="Enter JSON here..."
+    ></textarea>
+    <br />
     <button onclick="convertJson()">Convert</button>
     <button onclick="copyToClipboard()">Copy Result</button>
+    <br />
     <pre id="dartOutput"></pre>
 
     <script>
       function jsonToDart(className, jsonString) {
         try {
           const jsonObject = JSON.parse(jsonString);
+          let classDefinitions = [];
           if (Array.isArray(jsonObject)) {
-            return generateDartClass(className, jsonObject[0]);
+            generateDartClass(className, jsonObject[0], classDefinitions);
+          } else {
+            generateDartClass(className, jsonObject, classDefinitions);
           }
-          return generateDartClass(className, jsonObject);
+          return classDefinitions.reverse().join("\n\n");
         } catch (error) {
           console.error("Invalid JSON:", error);
           return "Error: Invalid JSON";
         }
       }
 
-      function generateDartClass(className, jsonObject, parentKey = "") {
+      function generateDartClass(
+        className,
+        jsonObject,
+        classDefinitions,
+        parentKey = ""
+      ) {
         let fields = "";
         let constructorParams = "";
         let fromJsonAssignments = "";
         let toJsonAssignments = "";
         let fakeDataAssignments = "";
-        let nestedClasses = "";
 
         for (const [key, value] of Object.entries(jsonObject)) {
           let camelCaseKey = toCamelCase(key);
@@ -88,13 +102,16 @@
             typeof value[0] === "object"
           ) {
             let nestedClassName = capitalizeFirstLetter(camelCaseKey);
-            nestedClasses +=
-              generateDartClass(nestedClassName, value[0], camelCaseKey) +
-              "\n\n";
+            generateDartClass(
+              nestedClassName,
+              value[0],
+              classDefinitions,
+              camelCaseKey
+            );
           }
         }
 
-        return `${nestedClasses}class ${className} {
+        let classDefinition = `class ${className} {
 ${fields}
   ${className}({
 ${constructorParams}  });
@@ -114,6 +131,8 @@ ${fakeDataAssignments}    );
 ${toJsonAssignments}    };
   }
 }`;
+
+        classDefinitions.push(classDefinition);
       }
 
       function inferDartType(value, key) {
