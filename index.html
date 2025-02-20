@@ -40,6 +40,9 @@
       function jsonToDart(className, jsonString) {
         try {
           const jsonObject = JSON.parse(jsonString);
+          if (Array.isArray(jsonObject)) {
+            return generateDartClass(className, jsonObject[0]);
+          }
           return generateDartClass(className, jsonObject);
         } catch (error) {
           console.error("Invalid JSON:", error);
@@ -87,6 +90,9 @@ ${toJsonAssignments}    };
           }
           return "List<dynamic>";
         }
+        if (typeof value === "string" && isValidDate(value)) {
+          return "String";
+        }
         switch (typeof value) {
           case "string":
             return "String";
@@ -99,6 +105,10 @@ ${toJsonAssignments}    };
           default:
             return "dynamic";
         }
+      }
+
+      function isValidDate(dateString) {
+        return !isNaN(Date.parse(dateString));
       }
 
       function mapJsonType(value) {
