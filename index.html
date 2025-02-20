@@ -166,13 +166,17 @@ ${toJsonAssignments}    };
           case "String":
             return `'fake_${key}'`;
           case "int":
-            return `1`;
+            return `-1`;
           case "double":
-            return `1.0`;
+            return `-1.0`;
           case "bool":
             return `true`;
           case "List<dynamic>?":
             return `[]`;
+          case `List<${capitalizeFirstLetter(key)}>`:
+            return `List.generate(5, (_) => ${capitalizeFirstLetter(
+              key
+            )}.fakeData())`;
           default:
             return `${capitalizeFirstLetter(key)}.fakeData()`;
         }
