@@ -67,18 +67,19 @@
         let nestedClasses = "";
 
         for (const [key, value] of Object.entries(jsonObject)) {
-          let type = inferDartType(value, key);
+          let camelCaseKey = toCamelCase(key);
+          let type = inferDartType(value, camelCaseKey);
           let nullable = "?";
-          fields += `  final ${type}${nullable} ${key};\n`;
-          constructorParams += `    this.${key},\n`;
-          fromJsonAssignments += `      ${key}: json['${key}']${mapJsonType(
+          fields += `  final ${type}${nullable} ${camelCaseKey};\n`;
+          constructorParams += `    this.${camelCaseKey},\n`;
+          fromJsonAssignments += `      ${camelCaseKey}: json['${key}']${mapJsonType(
             value,
-            key
+            camelCaseKey
           )},\n`;
-          toJsonAssignments += `      '${key}': ${key},\n`;
-          fakeDataAssignments += `      ${key}: ${generateFakeData(
+          toJsonAssignments += `      '${key}': ${camelCaseKey},\n`;
+          fakeDataAssignments += `      ${camelCaseKey}: ${generateFakeData(
             type,
-            key
+            camelCaseKey
           )},\n`;
 
           if (
@@ -86,9 +87,10 @@
             value.length > 0 &&
             typeof value[0] === "object"
           ) {
-            let nestedClassName = capitalizeFirstLetter(key);
+            let nestedClassName = capitalizeFirstLetter(camelCaseKey);
             nestedClasses +=
-              generateDartClass(nestedClassName, value[0], key) + "\n\n";
+              generateDartClass(nestedClassName, value[0], camelCaseKey) +
+              "\n\n";
           }
         }
 
@@ -142,6 +144,10 @@ ${toJsonAssignments}    };
         return !isNaN(Date.parse(dateString));
       }
 
+      function toCamelCase(string) {
+        return string.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+      }
+
       function capitalizeFirstLetter(string) {
         return string.charAt(0).toUpperCase() + string.slice(1);
       }
@@ -164,11 +170,11 @@ ${toJsonAssignments}    };
       function generateFakeData(type, key) {
         switch (type) {
           case "String":
-            return `'fake_${key}'`;
+            return `'fake${capitalizeFirstLetter(key)}'`;
           case "int":
-            return `-1`;
+            return `1`;
           case "double":
-            return `-1.0`;
+            return `1.0`;
           case "bool":
             return `true`;
           case "List<dynamic>?":
