@@ -187,9 +187,9 @@ ${toJsonAssignments}    };
           if (value.length > 0 && typeof value[0] === "object") {
             return ` == null ? [] : List<${capitalizeFirstLetter(
               key
-            )}>.from(json['${key}']!.map((x) => ${capitalizeFirstLetter(
+            )}>.from(json['${toSnakeCase(
               key
-            )}.fromJson(x)))`;
+            )}']!.map((x) => ${capitalizeFirstLetter(key)}.fromJson(x)))`;
           }
           return " ?? []";
         }
