@@ -196,7 +196,7 @@ ${toJsonAssignments}    };
         if (typeof value === "object" && value !== null) {
           return ` != null ? ${capitalizeFirstLetter(
             key
-          )}.fromJson(json['${key}']) : null`;
+          )}.fromJson(json['${toSnakeCase(key)}']) : null`;
         }
         return "";
       }
@@ -222,6 +222,9 @@ ${toJsonAssignments}    };
         }
       }
 
+      function toSnakeCase(str) {
+        return str.replace(/([A-Z])/g, "_$1").toLowerCase();
+      }
       function convertJson() {
         const jsonInput = document.getElementById("jsonInput").value;
         const className =
