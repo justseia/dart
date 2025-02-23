@@ -235,14 +235,9 @@ ${toJsonAssignments}    };
 
       function copyToClipboard() {
         const dartOutput = document.getElementById("dartOutput").innerText;
-        navigator.clipboard
-          .writeText(dartOutput)
-          .then(() => {
-            alert("Dart code copied to clipboard!");
-          })
-          .catch((err) => {
-            console.error("Failed to copy: ", err);
-          });
+        navigator.clipboard.writeText(dartOutput).catch((err) => {
+          console.error("Failed to copy: ", err);
+        });
       }
     </script>
   </body>
